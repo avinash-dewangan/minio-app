@@ -7,6 +7,7 @@ import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -29,6 +30,16 @@ public class MinIOServiceS {
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+    }
+    public void createFolder(String bucketName, String folderName) throws Exception {
+        // MinIO doesn't support empty objects, hence we create a 1-byte file to represent the folder
+        minioClient.putObject(
+                PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(folderName + "/") // Folder name ends with a slash
+                        .stream(new ByteArrayInputStream(new byte[0]), 0, -1)
+                        .build()
+        );
     }
 
     public void uploadFile(String bucketName, String objectName, InputStream inputStream, long size, String contentType) {
